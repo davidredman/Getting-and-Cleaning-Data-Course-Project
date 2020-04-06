@@ -18,13 +18,16 @@ setwd("C:/Users/chris/Desktop/w4proj")
 
 # name
 
-    colnames(x_train) <- features[,2]
-    colnames(y_train) <- "activityID"
-    colnames(subj_train) <- "subjectID"
-    colnames(x_test) <- features[,2]
-    colnames(y_test) <- "activityID"
-    colnames(subj_test) <- "subjectID"
-    colnames(activities) <- c("activityID", "activityType") 
+
+    colnames(features) <- c("n", "functions") 
+    colnames(x_train) <- features$functions
+    colnames(y_train) <- "code"
+    colnames(subj_train) <- "subject"
+    colnames(x_test) <- features$functions
+    colnames(y_test) <- "code"
+    colnames(subj_test) <- "subject"
+    colnames(activities) <- c("code", "activity")
+    
     
 # merge
     
@@ -41,23 +44,27 @@ str(Merged_Data, max.level = 2, head=TRUE, list.len = 5)
     colNames <- colnames(Merged_Data)
     
 #return vector true or false, subset data and tidy
+
     
-    measurements <-  (grepl("activityID", colNames) |
-                        grepl("subjectID", colNames) |
+    measurements <-  (grepl("code", colNames) |
+                          grepl("subject", colNames)|
                           grepl("mean..", colNames) |
+                          grepl("std...", colNames) |
                           grepl("std...", colNames)
-                      )
+    )
     
     meanstddev <- Merged_Data[, measurements == TRUE]
     descactnames <- merge(meanstddev, activities,
-                          by ="activityID",
+                          #by ="activity",
                           all.x = TRUE) 
     
     
 # 3. create tidy data and write the file to directory
     
-    tidydata <- aggregate(.~subjectID + activityID, descactnames, mean)
-    tidydata <- tidydata[order(tidydata$subjectID, tidydata$activityID), ]
+    #tidyData <- Merged_Data %>% select(subject, code, contains("mean"), contains("std"))
+    
+    tidydata <- aggregate(.~subject + activity, descactnames, mean)
+    tidydata <- tidydata[order(tidydata$subject, tidydata$activity), ]
     
     write.table(tidydata, file = "./tidy_data.txt", row.names = FALSE, col.names = TRUE)
     
